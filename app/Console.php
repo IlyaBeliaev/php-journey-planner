@@ -2,7 +2,6 @@
 
 namespace App;
 
-use App\Command\Timetable;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 
@@ -33,7 +32,7 @@ class Console extends Application
     {
         $defaultCommands = parent::getDefaultCommands();
 
-        $defaultCommands[] = new Timetable($this->app->getDB());
+        $defaultCommands[] = $this->app['command.timetable'];
 
         return $defaultCommands;
     }

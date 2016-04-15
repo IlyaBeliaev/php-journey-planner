@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Command\Timetable;
 use Assertis\SimpleDatabase\SimpleDatabase;
 use Monolog\Logger;
 use PDO;
@@ -23,7 +24,7 @@ class App extends Pimple
             return new Logger($app['name']);
         });
 
-        $this['db'] = $this->share(function(App $app){
+        $this['db'] = $this->share(function(){
             return new PDO('mysql:host=localhost;dbname=sardines', 'root', '');
         });
 
@@ -33,6 +34,10 @@ class App extends Pimple
         
         $this['console'] = $this->share(function(App $app){
             return new Console($app);
+        });
+
+        $this['command.timetable'] = $this->share(function(App $app){
+            return new Timetable($app['db.simple']);
         });
     }
 
