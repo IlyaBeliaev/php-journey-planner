@@ -13,7 +13,7 @@ class FileLoader {
         if ($handle = fopen($filename, "r")) {
             $timetable = [];
 
-            while ((list($departureTime, $arrivalTime, $origin, $destination, $service) = fgetcsv($handle, 100, ",")) !== false) {
+            while ((list($departureTime, $arrivalTime, $origin, $destination, $service) = fgetcsv($handle, 50, ",")) !== false) {
                 $timetable[] = new TimetableConnection($origin, $destination, $departureTime, $arrivalTime, $service);
             }
 
@@ -28,8 +28,8 @@ class FileLoader {
         if ($handle = fopen($filename, "r")) {
             $connections = [];
 
-            while ((list($origin, $destination, $duration) = fgetcsv($handle, 100, ",")) !== false) {
-                $connections[$origin] = new NonTimetableConnection($origin, $destination, $duration);
+            while ((list($origin, $destination, $duration) = fgetcsv($handle, 50, ",")) !== false) {
+                $connections[$origin][] = new NonTimetableConnection($origin, $destination, $duration);
             }
 
             return $connections;
