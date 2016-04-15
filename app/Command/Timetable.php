@@ -34,6 +34,8 @@ class Timetable extends Command
         $this->db = $db;
     }
 
+    /**
+     */
     protected function configure()
     {
         $this
