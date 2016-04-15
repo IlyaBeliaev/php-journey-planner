@@ -12,7 +12,7 @@ class FileLoader {
             $timetable = [];
 
             while ((list($departureTime, $arrivalTime, $origin, $destination, $service) = fgetcsv($handle, 100, ",")) !== false) {
-                $timetable[] = new TimetableConnection($departureTime, $arrivalTime, $origin, $destination, $service);
+                $timetable[] = new TimetableConnection($origin, $destination, $departureTime, $arrivalTime, $service);
             }
 
             return $timetable;
