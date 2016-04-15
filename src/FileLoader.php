@@ -42,7 +42,7 @@ class FileLoader {
             $interchangeTimes = [];
 
             while ((list($station, $duration) = fgetcsv($handle, 20, ",")) !== false) {
-                $interchangeTimes[$station] = $duration;
+                $interchangeTimes[$station] = $duration * 60;
             }
 
             return $interchangeTimes;

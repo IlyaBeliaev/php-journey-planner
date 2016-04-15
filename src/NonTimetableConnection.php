@@ -22,8 +22,13 @@ class NonTimetableConnection extends Connection {
         return $this->duration;
     }
 
-    public function toArray() {
-        return [$this->origin, $this->destination, $this->duration];
+    public function jsonSerialize() {
+        return [
+            "origin" => $this->origin,
+            "destination" => $this->destination,
+            "duration" => $this->duration,
+            "mode" => $this->mode,
+        ];
     }
 
     public function requiresInterchangeWith(TimetableConnection $connection) {

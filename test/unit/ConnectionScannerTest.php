@@ -3,6 +3,7 @@
 use LJN\ConnectionScanner;
 use LJN\TimetableConnection;
 use LJN\NonTimetableConnection;
+use LJN\Route;
 
 class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
@@ -15,7 +16,7 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $scanner = new ConnectionScanner($timetable, [], []);
         $route = $scanner->getRoute("A", "D", 900);
-        $this->assertEquals($timetable, $route);
+        $this->assertEquals(new Route($timetable), $route);
     }
 
     public function testJourneyWithEarlyTermination() {
@@ -28,11 +29,11 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $scanner = new ConnectionScanner($timetable, [], []);
         $route = $scanner->getRoute("A", "D", 900);
-        $expectedRoute = [
+        $expectedRoute = new Route([
             new TimetableConnection("A", "B", 1000, 1015, "CS1234"),
             new TimetableConnection("B", "C", 1020, 1045, "CS1234"),
             new TimetableConnection("C", "D", 1100, 1115, "CS1234"),
-        ];
+        ]);
 
         $this->assertEquals($expectedRoute, $route);
     }
@@ -50,11 +51,11 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $scanner = new ConnectionScanner($timetable, [], []);
         $route = $scanner->getRoute("A", "E", 900);
-        $expectedRoute = [
+        $expectedRoute = new Route([
             new TimetableConnection("A", "C", 1005, 1025, "CS1234"),
             new TimetableConnection("C", "D", 1030, 1100, "CS1234"),
             new TimetableConnection("D", "E", 1105, 1125, "CS1234"),
-        ];
+        ]);
 
         $this->assertEquals($expectedRoute, $route);
     }
@@ -69,7 +70,7 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $scanner = new ConnectionScanner($timetable, [], []);
         $route = $scanner->getRoute("A", "E", 900);
-        $expectedRoute = [];
+        $expectedRoute = new Route([]);
 
         $this->assertEquals($expectedRoute, $route);
     }
@@ -85,7 +86,7 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $scanner = new ConnectionScanner($timetable, [], []);
         $route = $scanner->getRoute("A", "E", 900);
-        $expectedRoute = [];
+        $expectedRoute = new Route([]);
 
         $this->assertEquals($expectedRoute, $route);
     }
@@ -107,11 +108,11 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $scanner = new ConnectionScanner($timetable, $nonTimetable, []);
         $route = $scanner->getRoute("A", "D", 900);
-        $expectedRoute = [
+        $expectedRoute = new Route([
             new TimetableConnection("A", "B", 1000, 1015, "CS1234"),
             new NonTimetableConnection("B", "C", 5),
             new TimetableConnection("C", "D", 1030, 1100, "CS1234")
-        ];
+        ]);
 
         $this->assertEquals($expectedRoute, $route);
     }
@@ -133,11 +134,11 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $scanner = new ConnectionScanner($timetable, $nonTimetable, []);
         $route = $scanner->getRoute("A", "D", 900);
-        $expectedRoute = [
+        $expectedRoute = new Route([
             new TimetableConnection("A", "B", 1000, 1015, "CS1234"),
             new TimetableConnection("B", "C", 1020, 1045, "CS1234"),
             new TimetableConnection("C", "D", 1100, 1115, "CS1234")
-        ];
+        ]);
 
         $this->assertEquals($expectedRoute, $route);
     }
@@ -158,11 +159,11 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $scanner = new ConnectionScanner($timetable, $nonTimetable, []);
         $route = $scanner->getRoute("A", "D", 900);
-        $expectedRoute = [
+        $expectedRoute = new Route([
             new NonTimetableConnection("A", "B", 5),
             new TimetableConnection("B", "C", 1020, 1045, "CS1234"),
             new TimetableConnection("C", "D", 1100, 1115, "CS1234"),
-        ];
+        ]);
 
         $this->assertEquals($expectedRoute, $route);
     }
@@ -182,7 +183,7 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $scanner = new ConnectionScanner($timetable, [], $interchangeTimes);
         $route = $scanner->getRoute("A", "D", 900);
-        $this->assertEquals($timetable, $route);
+        $this->assertEquals(new Route($timetable), $route);
     }
 
     public function testCantMakeConnectionBecauseOfInterchangeTime() {
@@ -200,7 +201,7 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $scanner = new ConnectionScanner($timetable, [], $interchangeTimes);
         $route = $scanner->getRoute("A", "D", 900);
-        $this->assertEquals([], $route);
+        $this->assertEquals(new Route([]), $route);
     }
 
     public function testWalkIsFasterThanChangeOfService() {
@@ -223,10 +224,10 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
         $route = $scanner->getRoute("ORP", "LBG", 900);
-        $expectedRoute = [
+        $expectedRoute = new Route([
             new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
             new NonTimetableConnection("WAE", "LBG", 20),
-        ];
+        ]);
 
         $this->assertEquals($expectedRoute, $route);
     }
@@ -250,11 +251,11 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
         $route = $scanner->getRoute("ORP", "LBG", 900);
-        $expectedRoute = [
+        $expectedRoute = new Route([
             new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
             new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000"),
             new TimetableConnection("CHX", "LBG", 1050, 1055, "SE2000"),
-        ];
+        ]);
 
         $this->assertEquals($expectedRoute, $route);
     }

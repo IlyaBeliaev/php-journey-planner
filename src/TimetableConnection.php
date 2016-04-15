@@ -36,8 +36,15 @@ class TimetableConnection extends Connection {
         return $this->arrivalTime;
     }
 
-    public function toArray() {
-        return [$this->origin, $this->destination, $this->departureTime, $this->arrivalTime];
+    public function jsonSerialize() {
+        return [
+            "origin" => $this->origin,
+            "destination" => $this->destination,
+            "departureTime" => $this->departureTime,
+            "arrivalTime" => $this->arrivalTime,
+            "service" => $this->service,
+            "mode" => $this->mode,
+        ];
     }
 
     public function requiresInterchangeWith(TimetableConnection $connection) {

@@ -2,7 +2,9 @@
 
 namespace LJN;
 
-abstract class Connection {
+use \JsonSerializable;
+
+abstract class Connection implements JsonSerializable {
 
     const TRAIN = "train", BUS = "bus", WALK = "walk", TUBE = "tube";
 
@@ -33,8 +35,12 @@ abstract class Connection {
         return $this->getMode();
     }
 
-    public function toArray() {
-        return [$this->origin, $this->destination, $this->mode];
+    public function jsonSerialize() {
+        return [
+            "origin" => $this->origin,
+            "destination" => $this->destination,
+            "mode" => $this->mode
+        ];
     }
 
     abstract function requiresInterchangeWith(TimetableConnection $connection);
