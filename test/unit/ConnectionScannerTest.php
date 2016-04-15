@@ -203,5 +203,59 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals([], $route);
     }
 
+    public function testWalkIsFasterThanChangeOfService() {
+        $timetable = [
+            new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
+            new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000"),
+            new TimetableConnection("CHX", "LBG", 1050, 1055, "SE2000"),
+            new TimetableConnection("CHX", "LBG", 1105, 1110, "SE2000"),
+        ];
 
+        $nonTimetable = [
+            "WAE" => [
+                new NonTimetableConnection("WAE", "LBG", 20),
+            ]
+        ];
+
+        $interchangeTimes = [
+            "CHX" => 10
+        ];
+
+        $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
+        $route = $scanner->getRoute("ORP", "LBG", 900);
+        $expectedRoute = [
+            new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
+            new NonTimetableConnection("WAE", "LBG", 20),
+        ];
+
+        $this->assertEquals($expectedRoute, $route);
+    }
+
+    public function testChangeIsFasterThanWalking() {
+        $timetable = [
+            new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
+            new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000"),
+            new TimetableConnection("CHX", "LBG", 1050, 1055, "SE2000"),
+        ];
+
+        $nonTimetable = [
+            "WAE" => [
+                new NonTimetableConnection("WAE", "LBG", 20),
+            ]
+        ];
+
+        $interchangeTimes = [
+            "CHX" => 5
+        ];
+
+        $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
+        $route = $scanner->getRoute("ORP", "LBG", 900);
+        $expectedRoute = [
+            new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
+            new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000"),
+            new TimetableConnection("CHX", "LBG", 1050, 1055, "SE2000"),
+        ];
+
+        $this->assertEquals($expectedRoute, $route);
+    }
 }
