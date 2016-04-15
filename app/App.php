@@ -40,14 +40,20 @@ class App extends Pimple
             return new Console($app);
         });
 
-        $this['factory.trip'] = $this->share(function(App $app){
+        $this['ride.service'] = $this->share(function(App $app){
             /** @var SimpleDatabase $db */
             $db = $app['db.simple'];
             $stationFactory = new StationFactory($db, $app['logger']);
             $callingPointFactory = new CallingPointFactory($db, $stationFactory);
-            $serviceFactory = new ServiceFactory($db, $callingPointFactory);
 
-            return new TripFactory($db, $serviceFactory);
+            return new ServiceFactory($db, $callingPointFactory);
+        });
+
+        $this['factory.trip'] = $this->share(function(App $app){
+            /** @var SimpleDatabase $db */
+            $db = $app['db.simple'];
+
+            return new TripFactory($db, $this['ride.service']);
         });
 
         $this['command.timetable'] = $this->share(function(App $app){

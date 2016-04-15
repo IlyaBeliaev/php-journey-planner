@@ -58,7 +58,7 @@ class Trip
     {
         $current = new DateTime(
             $isNextDay ?
-                $this->date->getDayLater()->formatShort():
+                $this->date->getDayLater()->formatShort() :
                 $this->date->formatShort()
         );
 
@@ -66,50 +66,49 @@ class Trip
 
         return $current->getTimestamp();
     }
-    
-    /**
-     * 
-     */
+
     public function getConnections()
     {
         $out = [];
 
-        /** @var CallingPoint $previous */
-        $previous = null;
+        $originalDepartureTime = null;
+        $departures = [];
 
         /** @var CallingPoint $current */
-        foreach ($this->service->getCallingPoints() as $current)
-        {
-            if (empty($previous)) {
-                if ($current->getDepartTime()) {
-                    $previous = $current;
+        foreach ($this->service->getCallingPoints() as $current) {
+
+            if (!$originalDepartureTime) {
+                $originalDepartureTime = $current->getDepartTime();
+            }
+
+            if ($current->getArriveTime() && $departures) {
+                /** @var CallingPoint $departure */
+                foreach ($departures as $departure) {
+                    $origin = $departure->getLocation()->getNlc();
+                    $destination = $current->getLocation()->getNlc();
+
+                    $departure = $this->getTimestamp(
+                        $departure->getDepartTime(),
+                        $departure->getDepartTime()->isBefore($originalDepartureTime)
+                    );
+
+                    $arrival = $this->getTimestamp(
+                        $current->getArriveTime(),
+                        $current->getArriveTime()->isBefore($originalDepartureTime)
+                    );
+
+                    $rsid = $this->service->getRsid();
+
+                    $out[] = "{$departure},{$arrival},{$origin},{$destination},{$rsid}";
                 }
-                continue;
+
+                if ($current->getDepartTime()) {
+                    $departures = [];
+                }
             }
-
-            if (!$current->getArriveTime()) {
-                continue;
-            }
-
-            $origin = $previous->getLocation()->getNlc();
-            $destination = $current->getLocation()->getNlc();
-
-            $departure = $this->getTimestamp(
-                $previous->getDepartTime(),
-                $previous->getArriveTime() ? $previous->getDepartTime()->isBefore($previous->getArriveTime()): false
-            );
-
-            $arrival = $this->getTimestamp(
-                $current->getArriveTime(),
-                $current->getArriveTime()->isBefore($previous->getDepartTime())
-            );
-
-            $rsid = $this->service->getRsid();
-
-            $out[] = "{$departure},{$arrival},{$origin},{$destination},{$rsid}";
 
             if ($current->getDepartTime()) {
-                $previous = $current;
+                $departures[] = $current;
             }
         }
 
