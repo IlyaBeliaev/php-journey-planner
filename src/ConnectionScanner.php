@@ -17,10 +17,20 @@ class ConnectionScanner {
     private $timetable;
 
     /**
-     * @param array $timetable
+     * Stores the list of non timetabled connections
+     *
+     * @var Array
      */
-    public function __construct(array $timetable) {
+    private $nonTimetable;
+
+
+    /**
+     * @param array $timetable
+     * @param array $nonTimetable
+     */
+    public function __construct(array $timetable, array $nonTimetable) {
         $this->timetable = $timetable;
+        $this->nonTimetable = $nonTimetable;
     }
 
     /**
@@ -47,8 +57,16 @@ class ConnectionScanner {
      * @return array
      */
     private function getConnections($startStation, $startTime) {
+        // this HashMap connections the earliest arrival time at each station, it's used for convenience
+        // when comparing connections with each other.
         $arrivals = [$startStation => $startTime];
+
+        // this HashMap contains the fastest available to connection to each station that can actually be
+        // made based on previous connections.
         $connections = [];
+
+        // check for non timetable connections at the origin station
+        $this->checkForBetterNonTimetableConnections($connections, $arrivals, $startStation);
 
         foreach ($this->timetable as $connection) {
             list($origin, $destination, $departureTime, $arrivalTime) = $connection;
@@ -59,12 +77,41 @@ class ConnectionScanner {
             if ($canGetToThisConnection && $thisConnectionIsBetter) {
                 $arrivals[$destination] = $arrivalTime;
                 $connections[$destination] = $connection;
+
+                $this->checkForBetterNonTimetableConnections($connections, $arrivals, $destination);
             }
         }
 
         return $connections;
     }
 
+    /**
+     * For the given station for better non-timetabled connnections by calculating the potential arrival time
+     * at the non timetabled connections destination as the arrival at the origin + the duration.
+     *
+     * In place of a mutable object $connections and $arrivals are passed by reference. This method doesn't have
+     * a return value as it just mutates the array arguments.
+     *
+     * There is an assumption that the arrival at the given origin station can be made and as such $arrivals[$origin]
+     * is set.
+     *
+     * @param array $connections
+     * @param array $arrivals
+     * @param string $origin
+     */
+    private function checkForBetterNonTimetableConnections(&$connections, &$arrivals, $origin) {
+        // check if there is a non timetable connection starting at the destination, and process it's connections
+        if (array_key_exists($origin, $this->nonTimetable)) {
+            foreach ($this->nonTimetable[$origin] as list($destination, $duration)) {
+                $thisConnectionIsBetter = !array_key_exists($destination, $arrivals) || $arrivals[$destination] > $arrivals[$origin] + $duration;
+
+                if ($thisConnectionIsBetter) {
+                    $arrivals[$destination] = $arrivals[$origin] + $duration;
+                    $connections[$destination] = [$origin, $destination, $duration];
+                }
+            }
+        }
+    }
     /**
      * Given a Hash Map of fastest connections trace back the route from the target
      * destination to the origin. If no route is found an empty array is returned
