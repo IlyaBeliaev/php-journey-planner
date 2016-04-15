@@ -102,7 +102,9 @@ class Trip
                     $out[] = "{$departure},{$arrival},{$origin},{$destination},{$rsid}";
                 }
 
-                $departures = [];
+                if ($current->getDepartTime()) {
+                    $departures = [];
+                }
             }
 
             if ($current->getDepartTime()) {
