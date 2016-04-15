@@ -6,6 +6,7 @@ use Assertis\Ride\Service\Service;
 use Assertis\Ride\Service\ServiceFactory;
 use Assertis\SimpleDatabase\SimpleDatabase;
 use Assertis\Util\Date;
+use Generator;
 use PDO;
 
 /**
@@ -71,12 +72,10 @@ class TripFactory
     /**
      * @param Date $start
      * @param Date $end
-     * @return TripList
+     * @return Generator
      */
-    public function getAllTripLists(Date $start, Date $end)
+    public function getTripLists(Date $start, Date $end)
     {
-        $out = new TripList();
-
         $statement = $this->db->executeQuery("
                 SELECT tuid, runs_from 
                 FROM service 
@@ -100,11 +99,9 @@ class TripFactory
                 continue;
             }
 
-            $out->appendAll($this->getTripList($service, $start, $end));
+            yield $this->getTripList($service, $start, $end);
 
             $previous = $service;
         }
-
-        return $out;
     }
 }

@@ -2,13 +2,9 @@
 
 namespace App\Command;
 
-use Assertis\Ride\CallingPoint\CallingPointFactory;
-use Assertis\Ride\Service\ServiceFactory;
-use Assertis\Ride\Station\StationFactory;
-use Assertis\SimpleDatabase\SimpleDatabase;
 use Assertis\Util\Date;
 use LJN\ConnectionListGenerator\TripFactory;
-use Psr\Log\LoggerInterface;
+use LJN\ConnectionListGenerator\TripList;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -65,10 +61,12 @@ class Timetable extends Command
         $start = $date->getDayEarlier();
         $end = $date->getDayLater();
 
-        $out = $this->tripFactory->getAllTripLists($start, $end)->getConnections();
-        sort($out);
-
-        $output->write(join("\n", $out));
+        /** @var TripList $list */
+        foreach ($this->tripFactory->getTripLists($start, $end) as $list) {
+            foreach ($list->getConnections() as $line) {
+                $output->writeln($line);
+            }
+        }
 
         return 0;
     }

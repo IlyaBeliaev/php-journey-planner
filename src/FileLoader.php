@@ -2,6 +2,8 @@
 
 namespace LJN;
 
+use InvalidArgumentException;
+
 /**
  * @author Linus Norton <linus.norton@assertis.co.uk>
  */
@@ -52,5 +54,24 @@ class FileLoader {
         }
     }
 
+    /**
+     * @param string $filename
+     * @return array
+     */
+    public function getLocations($filename)
+    {
+        $handle = fopen($filename, "r");
 
+        if (empty($handle)) {
+            throw new InvalidArgumentException("Could not open {$filename}");
+        }
+
+        $locations = [];
+
+        while ((list($nlc, $name) = fgetcsv($handle, 200, ",")) !== false) {
+            $locations[$nlc] = $name;
+        }
+
+        return $locations;
+    }
 }
