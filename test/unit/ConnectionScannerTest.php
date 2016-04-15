@@ -168,6 +168,29 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($expectedRoute, $route);
     }
 
+    public function testNonTimetableOnly() {
+        $timetable = [
+            new TimetableConnection("A", "B", 1000, 1015, "CS1234"),
+            new TimetableConnection("B", "C", 1020, 1045, "CS1234"),
+            new TimetableConnection("C", "D", 1030, 1100, "CS1234"),
+            new TimetableConnection("C", "D", 1100, 1115, "CS1234"),
+        ];
+
+        $nonTimetable = [
+            "A" => [
+                new NonTimetableConnection("A", "D", 5),
+            ]
+        ];
+
+        $scanner = new ConnectionScanner($timetable, $nonTimetable, []);
+        $route = $scanner->getRoute("A", "D", 900);
+        $expectedRoute = new Route([
+            new NonTimetableConnection("A", "D", 5)
+        ]);
+
+        $this->assertEquals($expectedRoute, $route);
+    }
+
     public function testChangeOfService() {
         $timetable = [
             new TimetableConnection("A", "B", 1000, 1015, "CS1000"),

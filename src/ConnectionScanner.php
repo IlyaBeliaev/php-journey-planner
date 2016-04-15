@@ -95,7 +95,7 @@ class ConnectionScanner {
 
     private function canGetToThisConnection(Connection $connection) {
         return array_key_exists($connection->getOrigin(), $this->arrivals) &&
-        $connection->getDepartureTime() >= $this->arrivals[$connection->getOrigin()] + $this->getInterchangeTime($connection);
+               $connection->getDepartureTime() >= $this->arrivals[$connection->getOrigin()] + $this->getInterchangeTime($connection);
     }
 
     private function getInterchangeTime(Connection $connection) {
@@ -105,7 +105,8 @@ class ConnectionScanner {
     }
 
     private function thisConnectionIsBetter(Connection $connection) {
-        return !array_key_exists($connection->getDestination(), $this->arrivals) || $this->arrivals[$connection->getDestination()] > $connection->getArrivalTime();
+        return !array_key_exists($connection->getDestination(), $this->arrivals) ||
+               $this->arrivals[$connection->getDestination()] > $connection->getArrivalTime();
     }
 
     /**

@@ -6,7 +6,7 @@ use \JsonSerializable;
 
 abstract class Connection implements JsonSerializable {
 
-    const TRAIN = "train", BUS = "bus", WALK = "walk", TUBE = "tube";
+    const TRAIN = "Train", BUS = "Bus", WALK = "Walk", TUBE = "Tube";
 
     protected $origin;
     protected $destination;
@@ -32,7 +32,7 @@ abstract class Connection implements JsonSerializable {
     }
 
     public function getMode() {
-        return $this->getMode();
+        return $this->mode;
     }
 
     public function jsonSerialize() {
