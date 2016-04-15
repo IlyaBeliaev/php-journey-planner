@@ -12,11 +12,18 @@ use Symfony\Component\Console\Command\Command;
 class Console extends Application
 {
     /**
-     * CommandLine constructor.
+     * @var App
      */
-    public function __construct()
+    private $app;
+
+    /**
+     * @param App $app
+     */
+    public function __construct(App $app)
     {
-        parent::__construct('PHP Journey Planner', '1.0');
+        $this->app = $app;
+
+        parent::__construct($app['name'], $app['version']);
     }
 
     /**
@@ -26,7 +33,7 @@ class Console extends Application
     {
         $defaultCommands = parent::getDefaultCommands();
 
-        $defaultCommands[] = new Timetable();
+        $defaultCommands[] = new Timetable($this->app->getDB());
 
         return $defaultCommands;
     }
