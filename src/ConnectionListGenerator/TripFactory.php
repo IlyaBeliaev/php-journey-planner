@@ -79,7 +79,8 @@ class TripFactory
         $statement = $this->db->executeQuery("
                 SELECT tuid, runs_from 
                 FROM service 
-                WHERE runs_from <= :start AND runs_to >= :end 
+                WHERE runs_from <= :start AND runs_to >= :end
+                  /*AND tuid = 'Y83228'*/
                 GROUP BY tuid, runs_from
             ",
             [
