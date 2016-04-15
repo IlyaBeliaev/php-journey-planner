@@ -38,8 +38,19 @@ $locations = outputTask("Load locations", function () use ($loader) {
 
 $scanner = new ConnectionScanner($timetableConnections, $nonTimetableConnections, $interchangeTimes);
 
+$timetableMemory = memory_get_peak_usage();
+
+// CBW = 5007
+// CBE = 5164
+// TBW = 5230
+// RYE = 5024
+// TON = 5229
+$route = outputTask("Plan journey", function () use ($scanner) {
+    return $scanner->getRoute('5229', '5024', strtotime('2016-04-20 10:50'));
+});
+
 /** @var TimetableConnection $connection */
-foreach ($scanner->getRoute('5224', '5228', strtotime('2016-04-20')) as $connection) {
+foreach ($route as $connection) {
     $origin = sprintf('%-20s', $locations[$connection->getOrigin()]);
     $destination = sprintf('%20s', $locations[$connection->getDestination()]);
 
@@ -49,4 +60,7 @@ foreach ($scanner->getRoute('5224', '5228', strtotime('2016-04-20')) as $connect
         $destination.' '.date('Y-m-d H:i', $connection->getArrivalTime())."\n";
 }
 
-//print_r($scanner->getRoute('5224', '5228', strtotime('2016-04-20')));
+$allMemory = memory_get_peak_usage();
+
+echo "\nPeak memory usage: " . number_format($allMemory / 1024 / 1024, 2) . "Mb\n";
+echo "Timetable memory usage: " . number_format($timetableMemory / 1024 / 1024, 2) . "Mb\n\n";
