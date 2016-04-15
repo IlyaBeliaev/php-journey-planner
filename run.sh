@@ -27,10 +27,10 @@ $nonTimetableConnections = outputTask("Load non timetable connections", function
     return $loader->getNonTimetableConnections("assets/non-timetable.csv");
 });
 
-$interchangeTimes = outputTask("Load non timetable connections", function () use ($loader) {
+$interchangeTimes = outputTask("Load intechange", function () use ($loader) {
     return $loader->getInterchangeTimes("assets/interchange.csv");
 });
 
 $scanner = new ConnectionScanner($timetableConnections, $nonTimetableConnections, $interchangeTimes);
 
-print_r($scanner->getRoute("0072", "9000", 1460705765));
+print_r($scanner->getRoute("0072", "9000", 1460705000));
