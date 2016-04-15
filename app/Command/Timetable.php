@@ -2,8 +2,13 @@
 
 namespace App\Command;
 
+use Assertis\Ride\CallingPoint\CallingPointFactory;
+use Assertis\Ride\Service\ServiceFactory;
+use Assertis\Ride\Station\StationFactory;
 use Assertis\SimpleDatabase\SimpleDatabase;
 use Assertis\Util\Date;
+use LJN\ConnectionListGenerator\TripFactory;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,17 +26,17 @@ class Timetable extends Command
     const ARG_DATE_DESCRIPTION = 'Date for which to generate a timetable';
 
     /**
-     * @var SimpleDatabase
+     * @var TripFactory
      */
-    private $db;
+    private $tripFactory;
 
     /**
-     * @param SimpleDatabase $db
+     * @param TripFactory $tripFactory
      */
-    public function __construct(SimpleDatabase $db)
+    public function __construct(TripFactory $tripFactory)
     {
         parent::__construct();
-        $this->db = $db;
+        $this->tripFactory = $tripFactory;
     }
 
     /**
@@ -56,8 +61,15 @@ class Timetable extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $date = new Date($input->getArgument('date'));
-        
-        $output->writeln("Done");
+
+        $start = $date->getDayEarlier();
+        $end = $date->getDayLater();
+
+        $out = $this->tripFactory->getAllTripLists($start, $end)->getConnections();
+        sort($out);
+
+        $output->write(join("\n", $out));
+
         return 0;
     }
 }

@@ -3,7 +3,11 @@
 namespace App;
 
 use App\Command\Timetable;
+use Assertis\Ride\CallingPoint\CallingPointFactory;
+use Assertis\Ride\Service\ServiceFactory;
+use Assertis\Ride\Station\StationFactory;
 use Assertis\SimpleDatabase\SimpleDatabase;
+use LJN\ConnectionListGenerator\TripFactory;
 use Monolog\Logger;
 use PDO;
 use Pimple;
@@ -36,8 +40,18 @@ class App extends Pimple
             return new Console($app);
         });
 
+        $this['factory.trip'] = $this->share(function(App $app){
+            /** @var SimpleDatabase $db */
+            $db = $app['db.simple'];
+            $stationFactory = new StationFactory($db, $app['logger']);
+            $callingPointFactory = new CallingPointFactory($db, $stationFactory);
+            $serviceFactory = new ServiceFactory($db, $callingPointFactory);
+
+            return new TripFactory($db, $serviceFactory);
+        });
+
         $this['command.timetable'] = $this->share(function(App $app){
-            return new Timetable($app['db.simple']);
+            return new Timetable($app['factory.trip']);
         });
     }
 
