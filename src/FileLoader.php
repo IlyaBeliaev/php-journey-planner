@@ -11,8 +11,8 @@ class FileLoader {
         if ($handle = fopen($filename, "r")) {
             $timetable = [];
 
-            while (($row = fgetcsv($handle, 100, ",")) !== false) {
-                $timetable[] = $row;
+            while ((list($departureTime, $arrivalTime, $origin, $destination, $service) = fgetcsv($handle, 100, ",")) !== false) {
+                $timetable[] = new TimetableConnection($departureTime, $arrivalTime, $origin, $destination, $service);
             }
 
             return $timetable;
@@ -27,7 +27,7 @@ class FileLoader {
             $connections = [];
 
             while ((list($origin, $destination, $duration) = fgetcsv($handle, 100, ",")) !== false) {
-                $connections[$origin] = [$destination, $duration];
+                $connections[$origin] = new NonTimetableConnection($origin, $destination, $duration);
             }
 
             return $connections;
@@ -36,5 +36,21 @@ class FileLoader {
             throw new InvalidArgumentException("Could not open {$filename}");
         }
     }
+
+    public function getInterchangeTimes($filename) {
+        if ($handle = fopen($filename, "r")) {
+            $interchangeTimes = [];
+
+            while ((list($station, $duration) = fgetcsv($handle, 20, ",")) !== false) {
+                $interchangeTimes[$station] = $duration;
+            }
+
+            return $interchangeTimes;
+        }
+        else {
+            throw new InvalidArgumentException("Could not open {$filename}");
+        }
+    }
+
 
 }
