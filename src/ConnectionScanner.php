@@ -7,8 +7,6 @@ namespace LJN;
  */
 class ConnectionScanner {
 
-    const ORIGIN_INDEX = 0;
-
     /**
      * Stores the list of connections. Please note that this timetable must be time ordered
      *
@@ -24,7 +22,7 @@ class ConnectionScanner {
     private $nonTimetable;
 
     /**
-     * this HashMap contains the fastest available to connection to each station that can actually be
+     * HashMap storing the fastest available to connection to each station that can actually be
      * made based on previous connections.
      *
      * @var Array
@@ -32,21 +30,29 @@ class ConnectionScanner {
     private $connections;
 
     /**
-     * this HashMap connections the earliest arrival time at each station, it's used for convenience
+     * HashMap storing each connections earliest arrival time, it's used for convenience
      * when comparing connections with each other.
      *
      * @var Array
      */
     private $arrivals;
 
+    /**
+     * HashMap of station => interchange time required at that station when changing service
+     *
+     * @var Array
+     */
+    private $interchangeTimes;
 
     /**
      * @param array $timetable
      * @param array $nonTimetable
+     * @param array $interchangeTimes
      */
-    public function __construct(array $timetable, array $nonTimetable) {
+    public function __construct(array $timetable, array $nonTimetable, array $interchangeTimes) {
         $this->timetable = $timetable;
         $this->nonTimetable = $nonTimetable;
+        $this->interchangeTimes = $interchangeTimes;
     }
 
     /**
@@ -79,9 +85,10 @@ class ConnectionScanner {
         $this->checkForBetterNonTimetableConnections($startStation);
 
         foreach ($this->timetable as $connection) {
-            list($origin, $destination, $departureTime, $arrivalTime) = $connection;
+            list($origin, $destination, $departureTime, $arrivalTime) = $connection->toArray();
 
-            $canGetToThisConnection = array_key_exists($origin, $this->arrivals) && $departureTime > $this->arrivals[$origin];
+            $interchangeTime = array_key_exists($origin, $this->connections) && array_key_exists($origin, $this->interchangeTimes) && $this->connections[$origin]->requiresInterchangeWith($connection) ? $this->interchangeTimes[$origin] : 0;
+            $canGetToThisConnection = array_key_exists($origin, $this->arrivals) && $departureTime >= $this->arrivals[$origin] + $interchangeTime;
             $thisConnectionIsBetter = !array_key_exists($destination, $this->arrivals) || $this->arrivals[$destination] > $arrivalTime;
 
             if ($canGetToThisConnection && $thisConnectionIsBetter) {
@@ -105,12 +112,13 @@ class ConnectionScanner {
     private function checkForBetterNonTimetableConnections($origin) {
         // check if there is a non timetable connection starting at the destination, and process it's connections
         if (array_key_exists($origin, $this->nonTimetable)) {
-            foreach ($this->nonTimetable[$origin] as list($destination, $duration)) {
+            foreach ($this->nonTimetable[$origin] as $connection) {
+                list($o, $destination, $duration) = $connection->toArray();
                 $thisConnectionIsBetter = !array_key_exists($destination, $this->arrivals) || $this->arrivals[$destination] > $this->arrivals[$origin] + $duration;
 
                 if ($thisConnectionIsBetter) {
                     $this->arrivals[$destination] = $this->arrivals[$origin] + $duration;
-                    $this->connections[$destination] = [$origin, $destination, $duration];
+                    $this->connections[$destination] = $connection;
                 }
             }
         }
@@ -128,7 +136,7 @@ class ConnectionScanner {
 
         while (array_key_exists($destination, $this->connections)) {
             $route[] = $this->connections[$destination];
-            $destination = $this->connections[$destination][self::ORIGIN_INDEX];
+            $destination = $this->connections[$destination]->getOrigin();
         }
 
         // if we found a route back to the origin
