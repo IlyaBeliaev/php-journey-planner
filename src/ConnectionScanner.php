@@ -7,20 +7,52 @@ namespace LJN;
  */
 class ConnectionScanner {
 
-    const ORIGIN_INDEX = 0;
-
     /**
-     * Stores the list of connections
+     * Stores the list of connections. Please note that this timetable must be time ordered
      *
      * @var Array
      */
     private $timetable;
 
     /**
-     * @param array $timetable
+     * Stores the list of non timetabled connections
+     *
+     * @var Array
      */
-    public function __construct(array $timetable) {
+    private $nonTimetable;
+
+    /**
+     * HashMap storing the fastest available to connection to each station that can actually be
+     * made based on previous connections.
+     *
+     * @var Array
+     */
+    private $connections;
+
+    /**
+     * HashMap storing each connections earliest arrival time, it's used for convenience
+     * when comparing connections with each other.
+     *
+     * @var Array
+     */
+    private $arrivals;
+
+    /**
+     * HashMap of station => interchange time required at that station when changing service
+     *
+     * @var Array
+     */
+    private $interchangeTimes;
+
+    /**
+     * @param array $timetable
+     * @param array $nonTimetable
+     * @param array $interchangeTimes
+     */
+    public function __construct(array $timetable, array $nonTimetable, array $interchangeTimes) {
         $this->timetable = $timetable;
+        $this->nonTimetable = $nonTimetable;
+        $this->interchangeTimes = $interchangeTimes;
     }
 
     /**
@@ -33,9 +65,12 @@ class ConnectionScanner {
      * @return array
      */
     public function getRoute($origin, $destination, $departureTime) {
-        $connections = $this->getConnections($origin, $departureTime);
+        $this->arrivals = [$origin => $departureTime];
+        $this->connections = [];
 
-        return $this->getRouteFromConnections($connections, $origin, $destination);
+        $this->getConnections($origin);
+
+        return $this->getRouteFromConnections($origin, $destination);
     }
 
     /**
@@ -44,42 +79,64 @@ class ConnectionScanner {
      *
      * @param  string $startStation
      * @param  int $startTime
-     * @return array
      */
-    private function getConnections($startStation, $startTime) {
-        $arrivals = [$startStation => $startTime];
-        $connections = [];
+    private function getConnections($startStation) {
+        // check for non timetable connections at the origin station
+        $this->checkForBetterNonTimetableConnections($startStation);
 
         foreach ($this->timetable as $connection) {
-            list($origin, $destination, $departureTime, $arrivalTime) = $connection;
+            list($origin, $destination, $departureTime, $arrivalTime) = $connection->toArray();
 
-            $canGetToThisConnection = array_key_exists($origin, $arrivals) && $departureTime > $arrivals[$origin];
-            $thisConnectionIsBetter = !array_key_exists($destination, $arrivals) || $arrivals[$destination] > $arrivalTime;
+            $interchangeTime = array_key_exists($origin, $this->connections) && array_key_exists($origin, $this->interchangeTimes) && $this->connections[$origin]->requiresInterchangeWith($connection) ? $this->interchangeTimes[$origin] : 0;
+            $canGetToThisConnection = array_key_exists($origin, $this->arrivals) && $departureTime >= $this->arrivals[$origin] + $interchangeTime;
+            $thisConnectionIsBetter = !array_key_exists($destination, $this->arrivals) || $this->arrivals[$destination] > $arrivalTime;
 
             if ($canGetToThisConnection && $thisConnectionIsBetter) {
-                $arrivals[$destination] = $arrivalTime;
-                $connections[$destination] = $connection;
+                $this->arrivals[$destination] = $arrivalTime;
+                $this->connections[$destination] = $connection;
+
+                $this->checkForBetterNonTimetableConnections($destination);
             }
         }
-
-        return $connections;
     }
 
+    /**
+     * For the given station for better non-timetabled connnections by calculating the potential arrival time
+     * at the non timetabled connections destination as the arrival at the origin + the duration.
+     *
+     * There is an assumption that the arrival at the given origin station can be made and as such $this->arrivals[$origin]
+     * is set.
+     *
+     * @param string $origin
+     */
+    private function checkForBetterNonTimetableConnections($origin) {
+        // check if there is a non timetable connection starting at the destination, and process it's connections
+        if (array_key_exists($origin, $this->nonTimetable)) {
+            foreach ($this->nonTimetable[$origin] as $connection) {
+                list($o, $destination, $duration) = $connection->toArray();
+                $thisConnectionIsBetter = !array_key_exists($destination, $this->arrivals) || $this->arrivals[$destination] > $this->arrivals[$origin] + $duration;
+
+                if ($thisConnectionIsBetter) {
+                    $this->arrivals[$destination] = $this->arrivals[$origin] + $duration;
+                    $this->connections[$destination] = $connection;
+                }
+            }
+        }
+    }
     /**
      * Given a Hash Map of fastest connections trace back the route from the target
      * destination to the origin. If no route is found an empty array is returned
      *
-     * @param  array  $connections
      * @param  strubg $origin
      * @param  string $destination
      * @return array
      */
-    private function getRouteFromConnections(array $connections, $origin, $destination) {
+    private function getRouteFromConnections($origin, $destination) {
         $route = [];
 
-        while (array_key_exists($destination, $connections)) {
-            $route[] = $connections[$destination];
-            $destination = $connections[$destination][self::ORIGIN_INDEX];
+        while (array_key_exists($destination, $this->connections)) {
+            $route[] = $this->connections[$destination];
+            $destination = $this->connections[$destination]->getOrigin();
         }
 
         // if we found a route back to the origin
