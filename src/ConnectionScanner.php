@@ -69,8 +69,9 @@ class ConnectionScanner {
         $this->connections = [];
 
         $this->getConnections($origin);
+        $route = $this->getRouteFromConnections($origin, $destination);
 
-        return new Route($this->getRouteFromConnections($origin, $destination));
+        return new Route($route);
     }
 
     /**
