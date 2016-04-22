@@ -95,18 +95,18 @@ class ConnectionScanner {
     }
 
     private function canGetToThisConnection(Connection $connection) {
-        return array_key_exists($connection->getOrigin(), $this->arrivals) &&
+        return isset($this->arrivals[$connection->getOrigin()]) &&
                $connection->getDepartureTime() >= $this->arrivals[$connection->getOrigin()] + $this->getInterchangeTime($connection);
     }
 
     private function getInterchangeTime(Connection $connection) {
-        return array_key_exists($connection->getOrigin(), $this->connections) &&
-               array_key_exists($connection->getOrigin(), $this->interchangeTimes) &&
+        return isset($this->connections[$connection->getOrigin()]) &&
+               isset($this->interchangeTimes[$connection->getOrigin()]) &&
                $this->connections[$connection->getOrigin()]->requiresInterchangeWith($connection) ? $this->interchangeTimes[$connection->getOrigin()] : 0;
     }
 
     private function thisConnectionIsBetter(Connection $connection) {
-        return !array_key_exists($connection->getDestination(), $this->arrivals) ||
+        return !isset($this->arrivals[$connection->getDestination()]) ||
                $this->arrivals[$connection->getDestination()] > $connection->getArrivalTime();
     }
 
@@ -121,9 +121,9 @@ class ConnectionScanner {
      */
     private function checkForBetterNonTimetableConnections($origin) {
         // check if there is a non timetable connection starting at the destination, and process it's connections
-        if (array_key_exists($origin, $this->nonTimetable)) {
+        if (isset($this->nonTimetable[$origin])) {
             foreach ($this->nonTimetable[$origin] as $connection) {
-                $thisConnectionIsBetter = !array_key_exists($connection->getDestination(), $this->arrivals) || $this->arrivals[$connection->getDestination()] > $this->arrivals[$connection->getOrigin()] + $connection->getDuration();
+                $thisConnectionIsBetter = !isset($this->arrivals[$connection->getDestination()]) || $this->arrivals[$connection->getDestination()] > $this->arrivals[$connection->getOrigin()] + $connection->getDuration();
 
                 if ($thisConnectionIsBetter) {
                     $this->connections[$connection->getDestination()] = $connection;
@@ -143,7 +143,7 @@ class ConnectionScanner {
     private function getRouteFromConnections($origin, $destination) {
         $route = [];
 
-        while (array_key_exists($destination, $this->connections)) {
+        while (isset($this->connections[$destination])) {
             $route[] = $this->connections[$destination];
             $destination = $this->connections[$destination]->getOrigin();
         }

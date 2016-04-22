@@ -9,63 +9,90 @@ use InvalidArgumentException;
  */
 class FileLoader {
 
-    public function getTimetableConnections($filename) {
-        if ($handle = fopen($filename, "r")) {
-            $timetable = [];
+    /**
+     * @var String
+     */
+    private $root;
 
-            while ((list($departureTime, $arrivalTime, $origin, $destination, $service) = fgetcsv($handle, 50, ",")) !== false) {
-                $timetable[] = new TimetableConnection($origin, $destination, $departureTime, $arrivalTime, $service);
-            }
+    const TIMETABLE_FILE = "test-sorted2.csv";
+    const NON_TIMETABLE_FILE = "non-timetable.csv";
+    const INTERCHANGE_FILE = "interchange.csv";
+    const LOCATION_FILE = "locations.csv";
 
-            return $timetable;
-        }
-        else {
-            throw new InvalidArgumentException("Could not open {$filename}");
-        }
+    /**
+     * @param $root root path to the assets folder
+     */
+    public function __construct($root) {
+        $this->root = $root;
     }
 
-    public function getNonTimetableConnections($filename) {
-        if ($handle = fopen($filename, "r")) {
-            $connections = [];
+    /**
+     * @return array of NonTimetableConnection
+     */
+    public function getTimetableConnections() {
+        $handle = fopen($this->root . self::TIMETABLE_FILE, "r");
 
-            while ((list($origin, $destination, $duration) = fgetcsv($handle, 50, ",")) !== false) {
-                $connections[$origin][] = new NonTimetableConnection($origin, $destination, $duration);
-            }
+        if (empty($handle)) {
+            throw new InvalidArgumentException("Could not open " . $this->root . self::TIMETABLE_FILE);
+        }
+        
+        $timetable = [];
 
-            return $connections;
+        while ((list($departureTime, $arrivalTime, $origin, $destination, $service) = fgetcsv($handle, 50, ",")) !== false) {
+            $timetable[] = new TimetableConnection($origin, $destination, $departureTime, $arrivalTime, $service);
         }
-        else {
-            throw new InvalidArgumentException("Could not open {$filename}");
-        }
+
+        return $timetable;
     }
 
-    public function getInterchangeTimes($filename) {
-        if ($handle = fopen($filename, "r")) {
-            $interchangeTimes = [];
+    /**
+     * @return array of NonTimetableConnection
+     */
+    public function getNonTimetableConnections() {
+        $handle = fopen($this->root . self::NON_TIMETABLE_FILE, "r");
 
-            while ((list($station, $duration) = fgetcsv($handle, 20, ",")) !== false) {
-                $interchangeTimes[$station] = $duration * 60;
-            }
+        if (empty($handle)) {
+            throw new InvalidArgumentException("Could not open " . $this->root . self::NON_TIMETABLE_FILE);
+        }
 
-            return $interchangeTimes;
+        $connections = [];
+
+        while ((list($origin, $destination, $duration) = fgetcsv($handle, 50, ",")) !== false) {
+            $connections[$origin][] = new NonTimetableConnection($origin, $destination, $duration);
         }
-        else {
-            throw new InvalidArgumentException("Could not open {$filename}");
+
+        return $connections;
+    }
+
+    /**
+     * @return array
+     */
+    public function getInterchangeTimes() {
+        $handle = fopen($this->root . self::INTERCHANGE_FILE, "r");
+
+        if (empty($handle)) {
+            throw new InvalidArgumentException("Could not open " . $this->root . self::INTERCHANGE_FILE);
         }
+
+        $interchangeTimes = [];
+
+        while ((list($station, $duration) = fgetcsv($handle, 20, ",")) !== false) {
+            $interchangeTimes[$station] = $duration * 60;
+        }
+
+        return $interchangeTimes;
     }
 
     /**
      * @param string $filename
      * @return array
      */
-    public function getLocations($filename)
-    {
-        $handle = fopen($filename, "r");
+    public function getLocations() {
+        $handle = fopen($this->root . self::LOCATION_FILE, "r");
 
         if (empty($handle)) {
-            throw new InvalidArgumentException("Could not open {$filename}");
+            throw new InvalidArgumentException("Could not open " . $this->root . self::LOCATION_FILE);
         }
-
         $locations = [];
 
         while ((list($nlc, $name) = fgetcsv($handle, 200, ",")) !== false) {

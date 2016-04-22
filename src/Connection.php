@@ -45,4 +45,5 @@ abstract class Connection implements JsonSerializable {
 
     abstract function requiresInterchangeWith(TimetableConnection $connection);
 
+    abstract function getDuration();
 }

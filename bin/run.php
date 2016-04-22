@@ -1,14 +1,29 @@
-#!/usr/bin/php5
+#!/usr/bin/env php
 <?php
 
-require "vendor/autoload.php";
+require __DIR__ . "/../vendor/autoload.php";
 
 use LJN\FileLoader;
 use LJN\DatabaseLoader;
 use LJN\ConnectionScanner;
 use LJN\TimetableConnection;
+use LJN\DijkstraShortestPath;
+use LJN\TreePersistence;
 
-$loader = new FileLoader();
+
+// CBW = 5007
+// CBE = 5164
+// TBW = 5230
+// RYE = 5024
+// TON = 5229
+// EUS = 1444
+// BIR = 1215
+$origin = "5007";
+$destination = "5230";
+$targetTime = strtotime('2016-04-20 07:50');
+
+
+$loader = new FileLoader(__DIR__ . '/../assets/');
 
 function outputTask($name, $fn)
 {
@@ -24,46 +39,33 @@ function outputTask($name, $fn)
 
 echo "\n".str_pad(" Journey Planner ", 80, "#", STR_PAD_BOTH)."\n";
 
-# $timetableConnections = outputTask("Loading timetable", function () use ($loader) {
-#     return $loader->getTimetableConnections("assets/test-sorted.csv");
-# });
-
-$targetTime = strtotime('2016-04-21 07:50');
-
-$timetableConnections = outputTask("Loading timetable", function () use ($targetTime) {
+$timetableConnections = outputTask("Loading timetable", function () use ($targetTime, $origin) {
     $pdo = new \PDO("mysql:dbname=ojp;host=127.0.0.1", "ojp", "ojp");
     $loader = new DatabaseLoader($pdo);
 
-    return $loader->getTimetableConnections($targetTime);
+    return $loader->getTimetableConnections($targetTime, $origin);
 });
 
 $nonTimetableConnections = outputTask("Loading non timetable connections", function () use ($loader) {
-    return $loader->getNonTimetableConnections("assets/non-timetable.csv");
+    return $loader->getNonTimetableConnections();
 });
 
 $interchangeTimes = outputTask("Loading intechange", function () use ($loader) {
-    return $loader->getInterchangeTimes("assets/interchange.csv");
+    return $loader->getInterchangeTimes();
 });
 
 $locations = outputTask("Loading locations", function () use ($loader) {
-    return $loader->getLocations("assets/locations.csv");
+    return $loader->getLocations();
 });
 
 $scanner = new ConnectionScanner($timetableConnections, $nonTimetableConnections, $interchangeTimes);
 
-//echo "\nConnections: ".count($timetableConnections);
+echo "\nConnections: ".count($timetableConnections);
 
 $timetableMemory = memory_get_peak_usage();
 
-// CBW = 5007
-// CBE = 5164
-// TBW = 5230
-// RYE = 5024
-// TON = 5229
-// EUS = 1444
-// BIR = 1215
-$route = outputTask("Plan journey", function () use ($scanner, $targetTime) {
-    return $scanner->getRoute('5007', '5164', $targetTime);
+$route = outputTask("Plan journey", function () use ($scanner, $targetTime, $origin, $destination) {
+    return $scanner->getRoute($origin, $destination, $targetTime);
 });
 
 echo "\n".str_pad(" Route ", 80, "#", STR_PAD_BOTH)."\n";

@@ -36,6 +36,10 @@ class TimetableConnection extends Connection {
         return $this->arrivalTime;
     }
 
+    public function getDuration() {
+        return $this->arrivalTime - $this->departureTime;
+    }
+
     public function jsonSerialize() {
         return [
             "origin" => $this->origin,
