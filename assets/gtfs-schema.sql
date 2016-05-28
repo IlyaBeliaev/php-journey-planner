@@ -26,7 +26,6 @@ CREATE TABLE `calendar_dates` (
 DROP TABLE IF EXISTS `calendar`;
 CREATE TABLE `calendar` (
     id INT(12) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    transit_system VARCHAR(50) NOT NULL,
     service_id VARCHAR(20) NOT NULL,
     monday TINYINT(1) NOT NULL,
     tuesday TINYINT(1) NOT NULL,
@@ -197,21 +196,19 @@ CREATE TABLE `stops` (
     wheelchair_boarding TINYINT(1),
     cate_type VARCHAR(1),
     tiploc VARCHAR(9),
-    KEY `zone_id` (zone_id),
+    KEY `stop_id` (stop_id),
     KEY `stop_lat` (stop_lat),
     KEY `stop_lon` (stop_lon),
-    KEY `location_type` (location_type),
     KEY `parent_station` (parent_station)
 );
 
 DROP TABLE IF EXISTS `transfers`;
 CREATE TABLE `transfers` (
     id INT(12) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    transit_system VARCHAR(50) NOT NULL,
-    from_stop_id INT(20) NOT NULL,
-    to_stop_id INT(20) NOT NULL,
+    from_stop_id VARCHAR(20) NOT NULL,
+    to_stop_id VARCHAR(20) NOT NULL,
     transfer_type TINYINT(1) NOT NULL,
-    min_transfer_time VARCHAR(100)
+    min_transfer_time INT(8) NOT NULL
 );
 
 DROP TABLE IF EXISTS `trips`;

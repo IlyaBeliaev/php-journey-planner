@@ -27,7 +27,7 @@ class Console extends Application {
     protected function getDefaultCommands() {
         $defaultCommands = parent::getDefaultCommands();
 
-        $defaultCommands[] = $this->container['command.import_from_gtfs'];
+        $defaultCommands[] = $this->container['command.plan_journey'];
 
         return $defaultCommands;
     }

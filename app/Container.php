@@ -2,8 +2,8 @@
 
 namespace JourneyPlanner\App;
 
-use JourneyPlanner\App\Command\ImportFromGTFS;
-use JourneyPlanner\Lib\Import\GTFSConverter;
+use JourneyPlanner\App\Command\PlanJourney;
+use JourneyPlanner\Lib\DatabaseLoader;
 use PDO;
 use Pimple\Container;
 use Monolog\Logger;
@@ -28,12 +28,12 @@ class Container extends Container {
             return new PDO('mysql:host=localhost;dbname=ojp', 'root', '');
         };
 
-        $this['command.import_from_gtfs'] = function(Container $container) {
-            return new ImportFromGTFS($container['import.gtfs_converter']);
+        $this['command.plan_journey'] = function(Container $container) {
+            return new PlanJourney($container['loader.database']);
         };
 
-        $this['import.gtfs_converter'] = function(Container $container) {
-            return new GTFSConverter($container['db'], $container['logger']);
+        $this['loader.database'] = function(Container $container) {
+            return new DatabaseLoader($container['db']);
         };
 
         $this['logger'] = function() {

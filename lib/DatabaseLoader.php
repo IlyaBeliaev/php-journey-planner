@@ -24,38 +24,58 @@ class DatabaseLoader {
     /**
      * Get any connections that are relevant to this query
      *
-     * @param  string $startTime e.g. 07:42:20
+     * @param  int $startTimestamp
      * @param  string $origin    e.g. CHX
      * @return TimetableConnection[]
      */
-    public function getTimetableConnections($startTime, $origin) {
+    public function getTimetableConnections($startTimestamp, $origin) {
+        $dow = lcfirst(date('l', $startTimestamp));
+
         $stmt = $this->db->prepare("
-            SELECT c.* FROM timetable_connection c
+            SELECT c.departureTime, c.arrivalTime, c.origin, c.destination, c.service
+            FROM timetable_connection c
             JOIN shortest_path sp
               ON c.destination = sp.destination
               AND :origin = sp.origin
             WHERE departureTime > :startTime + sp.duration
+            AND startDate < :startDate AND endDate > :startDate
+            AND {$dow} = 1
+            ORDER BY arrivalTime
         ");
 
         $stmt->execute([
-            'startTime' => $startTime,
+            'startTime' => date("H:i:s", $startTimestamp),
+            'startDate' => date("Y-m-d", $startTimestamp),
             'origin' => $origin
         ]);
 
-        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'TimetableConnection', ['','','','','']);
+        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\TimetableConnection', ['','','','','']);
     }
 
     /**
      * Grap all connections after the target time
      *
-     * @param  string $startTime
+     * @param  string $startTimestamp
      * @return TimetableConnection[]
      */
-    public function getUnprunedTimetableConnections($startTime) {
-        $stmt = $this->db->prepare("SELECT * FROM timetable_connection WHERE departureTime > :startTime");
-        $stmt->execute(['startTime' => $startTime]);
+    public function getUnprunedTimetableConnections($startTimestamp) {
+        $dow = lcfirst(date('l', $startTimestamp));
 
-        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'TimetableConnection', ['','','','','']);
+        $stmt = $this->db->prepare("
+            SELECT TIME_TO_SEC(departureTime) as departureTime, TIME_TO_SEC(arrivalTime) as arrivalTime, origin, destination, service
+            FROM timetable_connection
+            WHERE departureTime > :startTime
+            AND startDate < :startDate AND endDate > :startDate
+            AND {$dow} = 1
+            ORDER BY arrivalTime
+        ");
+
+        $stmt->execute([
+            'startTime' => date("H:i:s", $startTimestamp),
+            'startDate' => date("Y-m-d", $startTimestamp),
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\TimetableConnection', ['','','','','']);
     }
 
     /**
@@ -66,12 +86,44 @@ class DatabaseLoader {
     public function getFastestConnections() {
         $stmt = $this->db->query("SELECT * FROM fastest_connection");
 
-        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, '    TimetableConnection', ['','','','','']);
+        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\TimetableConnection', ['','','','','']);
     }
 
     public function getNonTimetableConnections() {
+        $stmt = $this->db->query("SELECT origin, destination, duration, mode FROM non_timetable_connection");
+        $results = [];
+
+        foreach ($stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\NonTimetableConnection', ['','','','','']) as $c) {
+            if (isset($results[$c->getOrigin()])) {
+                $results[$c->getOrigin()][] = $c;
+            }
+            else {
+                $results[$c->getOrigin()] = [$c];
+            }
+        }
+
+        return $results;
     }
 
     public function getInterchangeTimes() {
+        $stmt = $this->db->query("SELECT station, duration FROM interchange");
+        $results = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $results[$row['station']] = $row['duration'];
+        }
+
+        return $results;
+    }
+
+    public function getLocations() {
+        $stmt = $this->db->query("SELECT stop_code, stop_name FROM stops WHERE stop_code != ''");
+        $results = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $results[$row['stop_code']] = $row['stop_name'];
+        }
+
+        return $results;
     }
 }
