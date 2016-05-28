@@ -84,7 +84,7 @@ class DatabaseLoader {
      * @return array
      */
     public function getFastestConnections() {
-        $stmt = $this->db->query("SELECT * FROM fastest_connection");
+        $stmt = $this->db->query("SELECT TIME_TO_SEC(departureTime) as departureTime, TIME_TO_SEC(arrivalTime) as arrivalTime, origin, destination, service FROM fastest_connection");
 
         return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\TimetableConnection', ['','','','','']);
     }

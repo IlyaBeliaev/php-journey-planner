@@ -2,7 +2,6 @@
 
 namespace JourneyPlanner\App\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -10,7 +9,7 @@ use JourneyPlanner\Lib\DatabaseLoader;
 use JourneyPlanner\Lib\TimetableConnection;
 use JourneyPlanner\Lib\ConnectionScanner;
 
-class PlanJourney extends Command {
+class PlanJourney extends ConsoleCommand {
     const NAME = 'plan-journey';
     const DESCRIPTION = 'Plan a journey';
 
@@ -76,7 +75,7 @@ class PlanJourney extends Command {
      * @param  int             $targetTime
      */
     private function planJourney(OutputInterface $out, $origin, $destination, $targetTime) {
-        $out->writeLn(str_pad(" Journey Planner ", 80, "#", STR_PAD_BOTH));
+        $this->outputHeading($out, "Journey Planner");
 
         $timetableConnections = $this->outputTask($out, "Loading timetable", function () use ($targetTime, $origin) {
             //return $this->loader->getTimetableConnections($targetTime, $origin);
@@ -113,7 +112,7 @@ class PlanJourney extends Command {
      * @param  Connection[]    $route
      */
     private function displayRoute(OutputInterface $out, array $locations, $route) {
-        $out->writeLn("\n".str_pad(" Route ", 80, "#", STR_PAD_BOTH));
+        $this->outputHeading($out, "Route");
 
         foreach ($route as $connection) {
             $origin = sprintf('%-30s', $locations[$connection->getOrigin()]);
@@ -136,18 +135,4 @@ class PlanJourney extends Command {
             }
         }
     }
-
-    private function outputTask(OutputInterface $out, $name, $fn) {
-        $out->write("# {$name}");
-        $timeStart = microtime(true);
-        $result = $fn();
-        $timeEnd = microtime(true);
-        $time = sprintf("%8s", round($timeEnd - $timeStart, 4));
-
-        $out->writeLn(str_pad(" finished {$time}s #", 78 - strlen($name), ".", STR_PAD_LEFT));
-
-        return $result;
-    }
-
-
 }

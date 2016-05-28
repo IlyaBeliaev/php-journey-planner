@@ -3,11 +3,15 @@
 namespace JourneyPlanner\App;
 
 use JourneyPlanner\App\Command\PlanJourney;
+use JourneyPlanner\App\Command\CreateShortestPathTree;
 use JourneyPlanner\Lib\DatabaseLoader;
+use JourneyPlanner\Lib\TreePersistence;
 use PDO;
 use Pimple\Container;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use Spork\ProcessManager;
+use Spork\Batch\Strategy\ChunkStrategy;
 
 class Container extends Container {
 
@@ -24,16 +28,25 @@ class Container extends Container {
             return new Console($container);
         };
 
-        $this['db'] = function() {
-            return new PDO('mysql:host=localhost;dbname=ojp', 'root', '');
-        };
+        $this['db'] = $this->createPDO();
 
         $this['command.plan_journey'] = function(Container $container) {
             return new PlanJourney($container['loader.database']);
         };
 
+        $this['command.create_tree'] = function(Container $container) {
+            return new CreateShortestPathTree($container['loader.database'], $container['persistence.tree']);
+        };
+
         $this['loader.database'] = function(Container $container) {
             return new DatabaseLoader($container['db']);
+        };
+
+        $this['persistence.tree'] = function(Container $container) {
+            $manager = new ProcessManager();
+            $strategy = new ChunkStrategy(32);
+
+            return new TreePersistence($manager, $strategy, [$this, 'createPDO']);
         };
 
         $this['logger'] = function() {
@@ -43,6 +56,16 @@ class Container extends Container {
 
             return $logger;
         };
+    }
+
+    /**
+     * @return PDO
+     */
+    public function createPDO() {
+        $pdo = new PDO('mysql:host=localhost;dbname=ojp', 'root', '');
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        return $pdo;
     }
 
     /**

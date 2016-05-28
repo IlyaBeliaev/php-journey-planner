@@ -4,19 +4,34 @@ namespace JourneyPlanner\Lib;
 
 use PDO;
 use Spork\ProcessManager;
+use Spork\Batch\Strategy\AbstractStrategy;
 
 class TreePersistence {
 
     /**
-     * @var PDO
+     * @var callable
      */
-    private $db;
+    private $dbFactory;
 
     /**
-     * @param PDO $pdo
+     * @var AbstractStrategy
      */
-    public function __construct(PDO $pdo) {
-        $this->db = $pdo;
+    private $forkStrategy;
+
+    /**
+     * @var ProcessManager
+     */
+    private $processManager;
+
+    /**
+     * @param ProcessManager   $processManager
+     * @param AbstractStrategy $forkStrategy
+     * @param callable         $pdoFactory
+     */
+    public function __construct(ProcessManager $processManager, AbstractStrategy $forkStrategy, callable $pdoFactory) {
+        $this->processManager = $processManager;
+        $this->forkStrategy = $forkStrategy;
+        $this->dbFactory = $pdoFactory;
     }
 
     /**
@@ -24,8 +39,16 @@ class TreePersistence {
      * table for the fastest way to get from A to B
      */
     public function populateFastestConnections() {
-        $this->db->exec("TRUNCATE fastest_connection");
-        $this->db->exec("INSERT INTO fastest_connection SELECT * FROM timetable_connection GROUP BY origin, destination HAVING MIN(arrivalTime - departureTime)");
+        $db = call_user_func($this->dbFactory);
+
+        $db->exec("TRUNCATE fastest_connection");
+        $db->exec("
+            INSERT INTO fastest_connection
+            SELECT departureTime, arrivalTime, origin, destination, service
+            FROM timetable_connection
+            GROUP BY origin, destination
+            HAVING MIN(arrivalTime - departureTime)
+        ");
     }
 
     /**
@@ -34,21 +57,24 @@ class TreePersistence {
      * @param  DijkstraShortestPath $pathFinder
      */
     public function populateShortestPaths(DijkstraShortestPath $pathFinder) {
-        $stmt = $this->db->prepare("INSERT INTO shortest_path VALUES (:origin, :destination, :duration)");
-        $manager = new ProcessManager();
+        $db = call_user_func($this->dbFactory);
 
-        foreach ($pathFinder->getNodes() as $station) {
-            $manager->fork(function() use ($pathFinder, $station, $stmt) {
-                $tree = $pathFinder->getShortestPathTree($station);
+        $db->exec("TRUNCATE shortest_path");
 
-                foreach ($tree as $destination => $duration) {
-                    $stmt->execute([
-                        "origin" => $station,
-                        "destination" => $destination,
-                        "duration" => $duration
-                    ]);
-                }
-            });
-        }
+        $callback = function($station) use ($pathFinder) {
+            $db = call_user_func($this->dbFactory);
+            $stmt = $db->prepare("INSERT INTO shortest_path VALUES (:origin, :destination, :duration)");
+            $tree = $pathFinder->getShortestPathTree($station);
+
+            foreach ($tree as $destination => $duration) {
+                $stmt->execute([
+                    "origin" => $station,
+                    "destination" => $destination,
+                    "duration" => $duration
+                ]);
+            }
+        };
+
+        $this->processManager->process($pathFinder->getNodes(), $callback, $this->forkStrategy);
     }
 }

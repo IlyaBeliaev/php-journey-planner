@@ -1,22 +1,12 @@
 #!/usr/bin/env php
 <?php
 
+use JourneyPlanner\App\Container;
+use JourneyPlanner\App\Console;
+use JourneyPlanner\App\Command\CreateShortestPathTree;
+use Symfony\Component\Console\Input\StringInput;
+
 require __DIR__ . '/../vendor/autoload.php';
 
-use PDO;
-use JourneyPlanner\Lib\DatabaseLoader;
-use JourneyPlanner\Lib\DijkstraShortestPath;
-use JourneyPlanner\Lib\TreePersistence;
-
-$pdo = new PDO("mysql:dbname=ojp;host=127.0.0.1", "root", "");
-$loader = new DatabaseLoader($pdo);
-$treePersistence = new TreePersistence($pdo);
-
-$treePersistence->populateFastestConnections();
-echo "Fastest connections created\n";
-$timetable = $loader->getFastestConnections();
-echo "Connections loaded\n";
-$pathFinder = new DijkstraShortestPath($timetable);
-echo "Path finder created\n";
-$treePersistence->populateShortestPaths($pathFinder);
-echo "Shortest paths calculated\n";
+$console = new Console(new Container());
+$console->run(new StringInput(CreateShortestPathTree::NAME));
