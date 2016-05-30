@@ -6,6 +6,8 @@ Reference implementation of the connection scan algorithm in PHP. Currently uses
 ```
 composer install
 ./vendor/bin/phpunit
+./bin/import-data
+./bin/run TON CHX
 ```
 
 # TODO
