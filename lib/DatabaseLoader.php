@@ -32,19 +32,19 @@ class DatabaseLoader {
         $dow = lcfirst(date('l', $startTimestamp));
 
         $stmt = $this->db->prepare("
-            SELECT c.departureTime, c.arrivalTime, c.origin, c.destination, c.service
+            SELECT TIME_TO_SEC(c.departureTime) as departureTime, TIME_TO_SEC(c.arrivalTime) as arrivalTime, c.origin, c.destination, c.service
             FROM timetable_connection c
             JOIN shortest_path sp
               ON c.destination = sp.destination
               AND :origin = sp.origin
-            WHERE departureTime > :startTime + sp.duration
-            AND startDate < :startDate AND endDate > :startDate
+            WHERE departureTime > SEC_TO_TIME(:startTime + sp.duration)
+            AND startDate <= :startDate AND endDate >= :startDate
             AND {$dow} = 1
             ORDER BY arrivalTime
         ");
 
         $stmt->execute([
-            'startTime' => date("H:i:s", $startTimestamp),
+            'startTime' => strtotime('1970-01-01 '.date("H:i:s", $startTimestamp)),
             'startDate' => date("Y-m-d", $startTimestamp),
             'origin' => $origin
         ]);
@@ -64,8 +64,8 @@ class DatabaseLoader {
         $stmt = $this->db->prepare("
             SELECT TIME_TO_SEC(departureTime) as departureTime, TIME_TO_SEC(arrivalTime) as arrivalTime, origin, destination, service
             FROM timetable_connection
-            WHERE departureTime > :startTime
-            AND startDate < :startDate AND endDate > :startDate
+            WHERE departureTime > SEC_TO_TIME(:startTime)
+            AND startDate <= :startDate AND endDate >= :startDate
             AND {$dow} = 1
             ORDER BY arrivalTime
         ");

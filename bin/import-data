@@ -34,7 +34,7 @@ mysql -u root ojp -e "LOAD DATA INFILE '$DIR/gtfs/links.txt' INTO TABLE links FI
 echo "Importing feed_info"
 COLUMNS=$(head -n 1 $DIR/gtfs/feed_info.txt)
 mysql -u root ojp -e "LOAD DATA INFILE '$DIR/gtfs/feed_info.txt' INTO TABLE feed_info FIELDS TERMINATED BY ',' IGNORE 1 LINES ($COLUMNS)"
-#rm -rf $DIR/gtfs/
+rm -rf $DIR/gtfs/
 
 # copying to native format
 echo "Creating native schema"
@@ -42,7 +42,9 @@ mysql -u root ojp < $DIR/../assets/native-schema.sql
 echo "Converting gtfs data to native format"
 #$DIR/import-from-gtfs
 
-mysql -u root ojp -e "SET @prevDepart := '00:00:00'; SET @prevStation := '   ';INSERT INTO timetable_connection SELECT @prevDepart, arrival_time, IF (stop_sequence = 1, '   ', @prevStation), parent_station, trip_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date, @prevStation := parent_station, @prevDepart := departure_time FROM stop_times JOIN stops USING (stop_id) JOIN trips USING (trip_id) JOIN calendar USING (service_id) ORDER BY trip_id, stop_sequence"
+mysql -u root ojp -e "SET @prevDepart := '00:00:00'; SET @prevStation := '   ';INSERT INTO timetable_connection SELECT @prevDepart, arrival_time, IF (stop_sequence = 1, '   ', @prevStation), parent_station, trip_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date, @prevStation := parent_station, @prevDepart := departure_time FROM stop_times LEFT JOIN stops USING (stop_id) LEFT JOIN trips USING (trip_id) LEFT JOIN calendar USING (service_id) ORDER BY trip_id, stop_sequence"
 mysql -u root ojp -e "DELETE FROM timetable_connection WHERE origin = '   '"
-mysql -u root ojp -e "INSERT INTO interchange SELECT from_stop_id, min_transfer_time / 60 FROM transfers"
+mysql -u root ojp -e "DELETE FROM timetable_connection WHERE origin = destination"
+mysql -u root ojp -e "DELETE FROM timetable_connection WHERE departureTime > arrivalTime"
+mysql -u root ojp -e "INSERT INTO interchange SELECT from_stop_id, min_transfer_time FROM transfers"
 mysql -u root ojp -e "INSERT INTO non_timetable_connection SELECT null, from_stop_id, to_stop_id, link_secs / 60, mode, start_time, end_time, start_date, end_date, monday, tuesday, wednesday, thursday, friday, saturday, sunday FROM links"

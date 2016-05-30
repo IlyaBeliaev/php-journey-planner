@@ -46,7 +46,7 @@ class PlanJourney extends ConsoleCommand {
             ->addArgument(
                'date',
                InputArgument::OPTIONAL,
-               'Journey date e.g. 2016-06-20 07:40:00'
+               'Journey date e.g. 2016-06-20T07:40:00'
             );
     }
 

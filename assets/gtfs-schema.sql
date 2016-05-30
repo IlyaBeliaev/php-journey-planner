@@ -248,7 +248,7 @@ CREATE TABLE `trips` (
     uic_code VARCHAR(10),
     atoc_code VARCHAR(10),
     applicable_timetable VARCHAR(10),
-    KEY `route_id` (route_id),
+    KEY `trip_id` (trip_id),
     KEY `service_id` (service_id),
     KEY `direction_id` (direction_id),
     KEY `block_id` (block_id),

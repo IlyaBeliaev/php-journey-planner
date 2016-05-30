@@ -6,8 +6,7 @@ CREATE TABLE `fastest_connection` (
   `origin` char(3) NOT NULL,
   `destination` char(3) NOT NULL,
   `service` char(8) NOT NULL,
-  PRIMARY KEY (`departureTime`,`arrivalTime`,`origin`,`destination`,`service`),
-  KEY `departureTime` (`departureTime`)
+  PRIMARY KEY (`departureTime`,`arrivalTime`,`origin`,`destination`,`service`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `timetable_connection`;
@@ -31,7 +30,9 @@ CREATE TABLE `timetable_connection` (
   PRIMARY KEY (`departureTime`,`arrivalTime`,`origin`,`destination`,`service`, `endDate`),
   KEY `startDate` (`startDate`),
   KEY `endDate` (`endDate`),
-  KEY `departureTime` (`departureTime`)
+  KEY `origin` (`origin`),
+  KEY `destination` (`destination`),
+  KEY `arrivalTime` (`arrivalTime`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `shortest_path`;
