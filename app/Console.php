@@ -1,38 +1,34 @@
 <?php
 
-namespace App;
+namespace JourneyPlanner\App;
 
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 
-/**
- * @author Michał Tatarynowicz <michal.tatarynowicz@assertis.co.uk>
- */
-class Console extends Application
-{
-    /**
-     * @var App
-     */
-    private $app;
+class Console extends Application {
 
     /**
-     * @param App $app
+     * @var Container
      */
-    public function __construct(App $app)
-    {
-        $this->app = $app;
+    private $container;
 
-        parent::__construct($app['name'], $app['version']);
+    /**
+     * @param Container $container
+     */
+    public function __construct(Container $container) {
+        $this->container = $container;
+
+        parent::__construct($container['name'], $container['version']);
     }
 
     /**
      * @return Command[]
      */
-    protected function getDefaultCommands()
-    {
+    protected function getDefaultCommands() {
         $defaultCommands = parent::getDefaultCommands();
 
-        $defaultCommands[] = $this->app['command.timetable'];
+        $defaultCommands[] = $this->container['command.plan_journey'];
+        $defaultCommands[] = $this->container['command.create_tree'];
 
         return $defaultCommands;
     }
