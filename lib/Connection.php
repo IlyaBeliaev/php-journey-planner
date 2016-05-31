@@ -2,9 +2,7 @@
 
 namespace JourneyPlanner\Lib;
 
-use \JsonSerializable;
-
-abstract class Connection implements JsonSerializable {
+abstract class Connection {
 
     const TRAIN = "Train", BUS = "Bus", WALK = "Walk", TUBE = "Tube";
 
@@ -23,27 +21,35 @@ abstract class Connection implements JsonSerializable {
         $this->mode = $mode;
     }
 
+    /**
+     * @return string
+     */
     public function getOrigin() {
         return $this->origin;
     }
 
+    /**
+     * @return string
+     */
     public function getDestination() {
         return $this->destination;
     }
 
+    /**
+     * @return string
+     */
     public function getMode() {
         return $this->mode;
     }
 
-    public function jsonSerialize() {
-        return [
-            "origin" => $this->origin,
-            "destination" => $this->destination,
-            "mode" => $this->mode
-        ];
-    }
-
+    /**
+     * @param  TimetableConnection $connection
+     * @return boolean
+     */
     abstract function requiresInterchangeWith(TimetableConnection $connection);
 
+    /**
+     * @return int
+     */
     abstract function getDuration();
 }

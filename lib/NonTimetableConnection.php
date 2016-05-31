@@ -18,20 +18,20 @@ class NonTimetableConnection extends Connection {
         $this->duration = $duration;
     }
 
+    /**
+     * @return int
+     */
     public function getDuration() {
         return $this->duration;
     }
 
-    public function jsonSerialize() {
-        return [
-            "origin" => $this->origin,
-            "destination" => $this->destination,
-            "duration" => $this->duration,
-            "mode" => $this->mode,
-        ];
-    }
-
+    /**
+     * A transfer always needs interchange.
+     *
+     * @param  TimetableConnection $connection
+     * @return boolean
+     */
     public function requiresInterchangeWith(TimetableConnection $connection) {
-        return false;
+        return true;
     }
 }
