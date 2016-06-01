@@ -71,7 +71,7 @@ class DatabaseLoader {
         ");
 
         $stmt->execute([
-            'startTime' => date("H:i:s", $startTimestamp),
+            'startTime' => strtotime('1970-01-01 '.date("H:i:s", $startTimestamp)),
             'startDate' => date("Y-m-d", $startTimestamp),
         ]);
 
