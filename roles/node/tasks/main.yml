@@ -1,0 +1,18 @@
+---
+
+- name: Add Node GPG key
+  apt_key:
+    url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+    state: present
+
+- name: Add Node repo
+  apt_repository:
+    repo: 'deb https://deb.nodesource.com/node_6.x {{ ansible_distribution_release }} main'
+    state: present
+
+- name: Install Node
+  apt:
+    state: present
+    update_cache: yes
+    cache_valid_time: 11400
+    pkg: nodejs

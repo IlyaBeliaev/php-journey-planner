@@ -1,0 +1,20 @@
+---
+
+- name: Add repository key to the system
+  apt_key:
+    url: "http://nginx.org/keys/nginx_signing.key"
+    state: present
+
+- name: Install nginx repository
+  apt_repository:
+    repo: 'deb http://nginx.org/packages/ubuntu/ {{ ansible_distribution_release }} nginx'
+    state: present
+
+- name: Install required packages
+  apt:
+    pkg: "{{ item }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 11400
+  with_items:
+    - nginx

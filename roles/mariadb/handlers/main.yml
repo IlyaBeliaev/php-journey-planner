@@ -1,0 +1,6 @@
+---
+
+- name: Reload mariadb
+  service:
+    name: mysql
+    state: reloaded

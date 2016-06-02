@@ -1,0 +1,8 @@
+---
+
+- hosts: "dev-ttt"
+  become: yes
+  become_method: sudo
+  roles:
+    - { role: mariadb, tags: mariadb }
+    - { role: traintickets.to, tags: traintickets.to }

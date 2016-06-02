@@ -31,6 +31,13 @@ CREATE TABLE `timetable_connection` (
   KEY `startDate` (`startDate`),
   KEY `endDate` (`endDate`),
   KEY `origin` (`origin`),
+  KEY `monday` (`monday`),
+  KEY `tuesday` (`tuesday`),
+  KEY `wednesday` (`wednesday`),
+  KEY `thursday` (`thursday`),
+  KEY `friday` (`friday`),
+  KEY `saturday` (`saturday`),
+  KEY `sunday` (`sunday`),
   KEY `destination` (`destination`),
   KEY `arrivalTime` (`arrivalTime`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -75,4 +82,22 @@ CREATE TABLE `interchange` (
   `station` char(3) NOT NULL,
   `duration` int(11) unsigned NOT NULL,
   PRIMARY KEY (`station`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `transfer_pattern`;
+CREATE TABLE `transfer_pattern` (
+  `id` INT(12) unsigned AUTO_INCREMENT,
+  `origin` char(12) NOT NULL,
+  `destination` char(12) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `transfer_pattern_leg`;
+CREATE TABLE `transfer_pattern_leg` (
+  `id` INT(12) unsigned AUTO_INCREMENT,
+  `transfer_pattern` INT(12) unsigned NOT NULL,
+  `origin` char(12) NOT NULL,
+  `destination` char(12) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `transfer_pattern` (`transfer_pattern`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

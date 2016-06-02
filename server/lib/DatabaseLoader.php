@@ -89,6 +89,9 @@ class DatabaseLoader {
         return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\TimetableConnection', ['','','','','']);
     }
 
+    /**
+     * @return NonTimetableConnection[]
+     */
     public function getNonTimetableConnections() {
         $stmt = $this->db->query("SELECT origin, destination, duration, mode FROM non_timetable_connection");
         $results = [];
@@ -105,6 +108,9 @@ class DatabaseLoader {
         return $results;
     }
 
+    /**
+     * @return array
+     */
     public function getInterchangeTimes() {
         $stmt = $this->db->query("SELECT station, duration FROM interchange");
         $results = [];
@@ -116,6 +122,9 @@ class DatabaseLoader {
         return $results;
     }
 
+    /**
+     * @return array
+     */
     public function getLocations() {
         $stmt = $this->db->query("SELECT stop_code, stop_name FROM stops WHERE stop_code != ''");
         $results = [];
@@ -125,5 +134,26 @@ class DatabaseLoader {
         }
 
         return $results;
+    }
+
+    /**
+     * @param  string $origin
+     * @param  string $destination
+     * @param  int $dateTime
+     * @return TimetableConnection[]
+     */
+    public function getScheduleFromTransferPattern($origin, $destination, $dateTime) {
+        $stmt = $this->db->query("
+            SELECT dept.trip_id, dept.stop_id, dept.trip_id, dept.departure_time, arrv.stop_id, arrv.arrival_time
+            FROM transfer_pattern
+            JOIN transfer_pattern_leg leg ON transfer_pattern.id = leg.transfer_pattern
+            JOIN stop_times as dept ON dept.stop_id = leg.origin
+            JOIN stop_times as arrv ON arrv.trip_id = dept.trip_id and arrv.stop_id = leg.destination
+            WHERE arrv.stop_sequence > dept.stop_sequence
+            AND transfer_pattern.origin = :origin
+            AND transfer_pattern.destination = :destination
+        ");
+
+        // TODO dateTime
     }
 }

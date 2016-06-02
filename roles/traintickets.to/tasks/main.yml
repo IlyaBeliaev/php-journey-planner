@@ -1,0 +1,46 @@
+---
+
+- stat:
+    path: "{{ ttt_www_path }}/node_modules"
+  register: st
+
+- name: NPM packages install
+  npm:
+    path: "{{ ttt_www_path }}"
+  when: st.stat.isdir is defined and not st.stat.isdir
+
+- stat:
+    path: "{{ ttt_api_path }}/vendor"
+  register: st
+
+- name: Composer install
+  composer:
+    command: install
+    working_dir: "{{ ttt_api_path }}"
+  when: st.stat.isdir is defined and not st.stat.isdir
+
+- name: Create database
+  mysql_db:
+    name: "{{ ttt_database_name }}"
+    state: present
+
+- name: Create environment profile
+  template:
+    src: templates/profile.sh.j2
+    dest: /etc/profile.d/traintickets.to.sh
+  notify:
+    - reload profile
+
+- name: Create server config
+  template:
+    src: templates/nginx.conf.j2
+    dest: /etc/nginx/conf.d/traintickets.to.conf
+  notify:
+   - reload nginx
+
+- name: Remove default site
+  file:
+    state: absent
+    path: /etc/nginx/conf.d/default.conf
+  notify:
+   - reload nginx

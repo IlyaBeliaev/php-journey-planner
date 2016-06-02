@@ -1,0 +1,29 @@
+---
+
+- name: Add repository key to the system
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: "0xcbcb082a1bb943db"
+
+- name: Install MariaDB repository
+  apt_repository:
+    repo: 'deb http://ftp.osuosl.org/pub/mariadb/repo/10.1/ubuntu {{ ansible_distribution_release }} main'
+    state: present
+
+- name: Install required packages
+  apt:
+    pkg: "{{ item }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 11400
+    allow_unauthenticated: yes
+  with_items:
+    - mariadb-server
+    - python-mysqldb
+
+- name: Create mariadb config
+  template:
+    src: templates/my.cnf.j2
+    dest: /etc/mysql/conf.d/custom.cnf
+  notify:
+   - reload mariadb
