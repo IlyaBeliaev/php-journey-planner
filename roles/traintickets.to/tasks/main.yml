@@ -1,23 +1,13 @@
 ---
 
-- stat:
-    path: "{{ ttt_www_path }}/node_modules"
-  register: st
-
 - name: NPM packages install
   npm:
     path: "{{ ttt_www_path }}"
-  when: st.stat.isdir is defined and not st.stat.isdir
-
-- stat:
-    path: "{{ ttt_api_path }}/vendor"
-  register: st
 
 - name: Composer install
   composer:
     command: install
     working_dir: "{{ ttt_api_path }}"
-  when: st.stat.isdir is defined and not st.stat.isdir
 
 - name: Create database
   mysql_db:
