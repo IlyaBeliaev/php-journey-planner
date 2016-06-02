@@ -21,8 +21,8 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.provider "virtualbox" do |vb|
-    vb.memory = 4024
-    vb.cpus = 4
+    vb.memory = 1024
+    vb.cpus = 1
   end
 
   config.hostsupdater.aliases = [
