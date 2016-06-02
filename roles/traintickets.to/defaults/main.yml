@@ -1,7 +1,7 @@
 ---
 
 ttt_api_path: "/var/www/api-ttt.local/"
-ttt_api_url: "api-api.local"
+ttt_api_url: "api-ttt.local"
 ttt_www_path: "/var/www/ttt.local/"
 ttt_www_url: "ttt.local"
 ttt_database_name: "ojp"

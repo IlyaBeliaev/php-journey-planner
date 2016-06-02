@@ -27,7 +27,7 @@ Vagrant.configure(2) do |config|
 
   config.hostsupdater.aliases = [
     "ttt.local",
-    "ttt-api.local"
+    "api-ttt.local"
   ]
 
 end
