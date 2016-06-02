@@ -18,7 +18,7 @@
     line: cgi.fix_pathinfo=0
     backrefs: yes
   notify:
-    - reload php-fpm
+    - reload php7.0-fpm
 
 - name: Switch FPM to TCP
   lineinfile:
@@ -27,7 +27,16 @@
     line: "listen = 127.0.0.1:9000"
     backrefs: yes
   notify:
-    - reload php-fpm
+    - reload php7.0-fpm
+
+- name: Use all the memory
+  lineinfile:
+    dest: /etc/php/7.0/fpm/php.ini
+    regexp: "^memory_limit = 128"
+    line: "memory_limit = 512M"
+    backrefs: yes
+  notify:
+    - reload php7.0-fpm
 
 - name: Check if Composer is installed
   stat: "path=/usr/local/bin/composer"
