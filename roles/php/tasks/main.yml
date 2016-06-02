@@ -10,6 +10,7 @@
     - php
     - php-mysql
     - php-fpm
+    - php-xml
 
 - name: PHP FPM config
   lineinfile:
