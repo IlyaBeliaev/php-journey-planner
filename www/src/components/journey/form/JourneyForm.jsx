@@ -1,9 +1,9 @@
 import classes from './JourneyForm.scss';
-import { BlockCentered, LocationAutocompleteInput } from 'components'
-import { DataBindingHelper } from 'utils'
+import BlockCentered from 'components/layout/block-centered/BlockCentered'
+import LocationAutocompleteInput from 'components/controls/location-autocomplete-input/LocationAutocompleteInput'
+import CustomIcon from 'components/controls/icon/CustomIcon'
+import { DataBindingHelper, LocationsHelper } from 'utils'
 import { push } from 'react-router-redux';
-
-import { Button, Col, Glyphicon } from 'react-bootstrap';
 
 export default class JourneyForm extends React.Component {
   constructor() {
@@ -31,30 +31,52 @@ export default class JourneyForm extends React.Component {
     defaultDestenition: null
   };
 
-  getJourneyUrl() {
-    return encodeURI('/journey/' + this.state.origin + '/' + this.state.destination + '/1')
+  getJourneyUrl(origin, destination) {
+    return encodeURI(`/journey/${origin}/${destination}/1`);
   }
 
   setDefaultData(props) {
-    const { defaultOrigin, defaultDestination } = props;
+    const { defaultOrigin, defaultDestination, locations } = props;
 
     let origin = defaultOrigin || '',
         destination = defaultDestination || '';
 
     this.setState({
-      origin: origin,
-      destination: destination
+      origin: LocationsHelper.getNameByCode(locations, origin),
+      destination: LocationsHelper.getNameByCode(locations, destination)
     });
   }
 
   onSubmit(e) {
     e.preventDefault();
 
-    if (!this.state.origin.length || !this.state.destination.length) {
-      return;
+    let origin = null,
+        originValue = this.state.origin,
+        destination = null,
+        destinationValue = this.state.destination;
+
+    const originSuggestions = LocationsHelper.find(this.props.locations, originValue);
+    if (originSuggestions.length) {
+      originValue = LocationsHelper.getStringValue(originSuggestions[0]);
+      origin = originSuggestions[0].code;
     }
 
-    this.props.dispatch(push(this.getJourneyUrl()));
+    const destinationSuggestions = LocationsHelper.find(this.props.locations, destinationValue);
+    if (destinationSuggestions.length) {
+      destinationValue = LocationsHelper.getStringValue(destinationSuggestions[0]);
+      destination = destinationSuggestions[0].code;
+    }
+
+    this.setState({
+      origin: originValue,
+      destination: destinationValue
+    }, () => {
+      if (_.isEmpty(origin) || _.isEmpty(destination)) {
+        return;
+      }
+
+      this.props.dispatch(push(this.getJourneyUrl(origin, destination)));
+    })
   }
 
   componentWillMount() {
@@ -84,7 +106,7 @@ export default class JourneyForm extends React.Component {
             autocompleteItems={locations}
             placeholder="Origin" />
 
-          <Glyphicon className={classes.rightIcon} glyph="arrow-right" />
+          <CustomIcon className={classes.rightIcon} name="arrow-right" />
 
         </div>
 
@@ -96,7 +118,7 @@ export default class JourneyForm extends React.Component {
         </div>
 
         <div className={classes.goButton} >
-          <Button type="submit" bsStyle="success">Go</Button>
+          <button type="submit" >Go</button>
         </div>
 
       </form>

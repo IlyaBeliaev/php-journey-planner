@@ -1,4 +1,4 @@
-import classes from './WalkLeg.scss';
+import classes from './TubeLeg.scss';
 
 import moment from 'moment';
 import 'moment-duration-format';
@@ -6,7 +6,7 @@ import 'moment-duration-format';
 import LegIcon from 'components/controls/leg-icon/LegIcon';
 import { LocationsHelper } from 'utils'
 
-export default class WalkLeg extends React.Component {
+export default class TubeLeg extends React.Component {
   constructor() {
     super();
   }
@@ -25,10 +25,10 @@ export default class WalkLeg extends React.Component {
     const stationName = LocationsHelper.getNameByCode(locations, destination);
 
     return (
-      <section className={(className || '') + ' ' + classes.walkLeg}>
-        <LegIcon mode="walk" />
+      <section className={(className || '') + ' ' + classes.tubeLeg}>
+        <LegIcon mode="tube" />
         <div className={classes.text} >
-          Go about <span>{formattedDuration}</span> to <span>{stationName}</span>
+          <span>{formattedDuration}</span> by tube to <span>{stationName}</span>
         </div>
       </section>
     )

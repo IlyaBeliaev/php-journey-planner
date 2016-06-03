@@ -3,8 +3,6 @@ import JourneyForm from './form/JourneyForm'
 import Directions from './directions/Directions'
 import { push } from 'react-router-redux';
 
-import { Button, Col, Glyphicon } from 'react-bootstrap';
-
 export default class Journey extends React.Component {
   constructor() {
     super();
@@ -60,6 +58,7 @@ export default class Journey extends React.Component {
         <Directions
           className={classes.directions}
           { ...directions }
+          locations={locations.locations}
           directionsRequest={directionsRequest}
           expandDirection={::this.expandDirection}
           dispatch={dispatch}
