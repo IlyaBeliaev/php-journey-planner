@@ -1,0 +1,14 @@
+---
+
+ttt_api_path: "/home/ubuntu/php-journey-planner/server/"
+ttt_api_url: "api.traintickets.to"
+ttt_www_path: "/home/ubuntu/php-journey-planner/www/"
+ttt_www_url: "traintickets.to"
+ttt_database_name: "ojp"
+ttt_env: "live"
+
+database_username: "root"
+database_password: ""
+database_hostname: "localhost"
+
+buffer_pool_size: "512M"

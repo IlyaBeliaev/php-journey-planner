@@ -11,6 +11,7 @@
     - php-mysql
     - php-fpm
     - php-xml
+    - php-zip
 
 - name: PHP FPM config
   lineinfile:

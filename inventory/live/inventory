@@ -1,0 +1,2 @@
+
+live-ttt ansible_ssh_host=52.51.228.252 ansible_ssh_port=22 ansible_ssh_user='ubuntu'
