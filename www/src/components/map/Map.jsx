@@ -121,7 +121,7 @@ export default class Map extends React.Component {
   }
 
   componentWillReceiveProps(newProps) {
-    this.setDirections(newProps);
+    setTimeout(() => this.setDirections(newProps), 300);
 
     const { locations, params } = newProps;
 
@@ -197,7 +197,7 @@ export default class Map extends React.Component {
     return <GoogleMap
       ref="mapComponent"
       containerProps={{ style: googleMapStyle }}
-      zoom={9}
+      defaultZoom={9}
       defaultCenter={defaultCenter}
       center={center}
       options={{ mapTypeControl: false, panControl: false, streetViewControl: false }} >
