@@ -29,7 +29,7 @@ export default class Map extends React.Component {
       data,
       locations,
       highlighted,
-      directionData => this.requestDirection.bind(this, requestId, directionData));
+      directionData => this.requestDirection(requestId, directionData));
   }
 
   requestDirection(requestId, directionData) {
