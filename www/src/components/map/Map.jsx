@@ -13,7 +13,7 @@ export default class Map extends React.Component {
 
   static propTypes = {
     locations: React.PropTypes.array.isRequired,
-    data: React.PropTypes.array.isRequired,
+    data: React.PropTypes.any.isRequired,
     params: React.PropTypes.object
   };
 
