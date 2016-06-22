@@ -66,10 +66,10 @@ export default class Journey extends React.Component {
   }
 
   render() {
-    const { className, locations, locationsRequest, directions, directionsRequest, dispatch, params, ...other } = this.props;
+    const { locations, locationsRequest, directions, directionsRequest, dispatch, params, ...other } = this.props;
 
     return (
-      <section className={(className || '') + ' ' + classes.journey}>
+      <section className={classes.journey}>
         <JourneyForm
           { ...locations }
           locationsRequest={locationsRequest}
