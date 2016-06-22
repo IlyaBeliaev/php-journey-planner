@@ -45,7 +45,6 @@ export default class Journey extends React.Component {
   }
 
   update(props) {
-    console.log(props);
     const { origin, destination, date } = props.params;
 
     const directionsUpToDate =

@@ -73,7 +73,6 @@ export default class Map extends React.Component {
 
   onResize = function() {
     const { shouldRenderMap } = this.state;
-    console.log(shouldRenderMap);
 
     if(window.innerWidth < 768 && shouldRenderMap) {
       this.setState({ shouldRenderMap: false })
