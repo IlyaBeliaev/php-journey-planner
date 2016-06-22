@@ -17,7 +17,7 @@ export default class Directions extends React.Component {
     loaded: React.PropTypes.bool.isRequired,
     loading: React.PropTypes.bool.isRequired,
     error: React.PropTypes.any,
-    directions: React.PropTypes.array.isRequired,
+    directions: React.PropTypes.any.isRequired,
     expandDirection: React.PropTypes.func.isRequired,
     expanded: React.PropTypes.string.isRequired,
     locations: React.PropTypes.array.isRequired
