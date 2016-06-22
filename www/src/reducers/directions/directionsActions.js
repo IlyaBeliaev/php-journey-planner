@@ -35,6 +35,7 @@ export function directionsRequest(origin, destination, date) {
     }));
 
     const url = `${config.directionsUrl}?origin=${origin}&destination=${destination}&date=${date}`;
+    //const url = require('static/data/journey-plan.json');
 
     fetch(url)
       .then((response) => {
