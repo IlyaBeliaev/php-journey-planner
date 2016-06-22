@@ -1,8 +1,16 @@
 ---
 
+- name: Git checkout
+  git:
+    repo: "https://github.com/linusnorton/php-journey-planner.git"
+    dest: "{{ttt_api_path}}/../"
+    update: "no"
+  when: git_checkout is defined and git_checkout
+
 - name: NPM packages install
   npm:
     path: "{{ ttt_www_path }}"
+  ignore_errors: yes
 
 - name: Composer install
   composer:
@@ -13,6 +21,7 @@
   mysql_db:
     name: "{{ ttt_database_name }}"
     state: present
+  when: create_database is defined and create_database
 
 - name: Create environment profile
   template:

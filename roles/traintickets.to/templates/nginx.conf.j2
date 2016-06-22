@@ -29,5 +29,13 @@ server {
       fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
       fastcgi_param HTTPS off;
 
+      fastcgi_param DATABASE_USERNAME {{ database_username }};
+      {% if database_password|length > 0 %}
+      fastcgi_param DATABASE_PASSWORD {{ database_password }};
+      {% else %}
+      fastcgi_param DATABASE_PASSWORD '';
+      {% endif %}
+      fastcgi_param DATABASE_HOSTNAME {{ database_hostname }};
+
     }
 }

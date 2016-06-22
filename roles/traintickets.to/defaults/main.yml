@@ -10,3 +10,6 @@ ttt_env: "dev"
 database_username: "root"
 database_password: ""
 database_hostname: "localhost"
+
+create_database: true
+git_checkout: false

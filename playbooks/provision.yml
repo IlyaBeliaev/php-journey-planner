@@ -1,5 +1,11 @@
 ---
 
+- hosts: "All"
+  become: yes
+  become_method: sudo
+  roles:
+    - { role: common, tags: common }
+
 - hosts: "dev-ttt"
   become: yes
   become_method: sudo
@@ -7,9 +13,8 @@
     - { role: mariadb, tags: mariadb }
     - { role: traintickets.to, tags: traintickets.to }
 
-- hosts: "live-ttt"
+- hosts: "live"
   become: yes
   become_method: sudo
   roles:
-    - { role: mariadb, tags: mariadb }
     - { role: traintickets.to, tags: traintickets.to }

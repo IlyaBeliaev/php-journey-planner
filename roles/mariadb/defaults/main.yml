@@ -1,3 +1,4 @@
 ---
 
-buffer_pool_size: "192M"
+mariadb_buffer_pool_size: "192M"
+mariadb_datadir: "/var/lib/mysql"
